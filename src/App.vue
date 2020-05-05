@@ -30,7 +30,7 @@ div.container
             v-on:click="openDetails(toDo)"
           ) {{ toDo.text }}
           button.btn.btn-danger.btn-sm.mr-1(
-            v-on:click="deleteToDo(toDo.createdAt)"
+            v-on:click="deleteToDoAndResetSelected(toDo.createdAt)"
           ) Delete
     div.border(
       style="height: 240px;"
@@ -58,54 +58,34 @@ div.container
       div.d-flex
         div.flex-grow-1
         button.btn.btn-danger(
-          v-on:click="deleteToDo(selected.createdAt)"
+          v-on:click="deleteToDoAndResetSelected(selected.createdAt)"
         ) Delete
 </template>
 
 <script>
+import { useDetailCard } from '@/compositions/detail-card';
+import { useList } from '@/compositions/list';
+
 export default {
-  data() {
+  setup() {
+    const { text, search, filteredList, checkIfAlreadyExists, addToDo, toDoList, deleteToDo} = useList();
+    const { selected, openDetails, closeDetails, resetSelected } = useDetailCard();
+    
+    const deleteToDoAndResetSelected = (createdAt) => {
+      deleteToDo(createdAt);
+      resetSelected(createdAt);
+    }
     return {
-      text: "",
-      search: "",
-      toDoList: [],
-      searchedToDos: [],
-      selected: null
-    }
-  },
-  computed: {
-    checkIfAlreadyExists() {
-      return this.toDoList.some(toDo => toDo.text.trim() === this.text.trim())
-    },
-    filteredList() {
-      return this.toDoList.filter(toDo => toDo.text.includes(this.search))
-    }
-  },
-  methods: {
-    addToDo() {
-      if (!this.checkIfAlreadyExists) {
-        this.toDoList.push({
-          createdAt: new Date().getTime(),
-          done: false,
-          text: this.text
-        })
-        this.text = ""
-      }
-    },
-    deleteToDo(createdAt) {
-      const index = this.toDoList.findIndex(
-        toDo => toDo.createdAt === createdAt
-      )
-      this.toDoList.splice(index, 1)
-      if (this.selected && createdAt === this.selected.createdAt) {
-        this.selected = null
-      }
-    },
-    openDetails(selectedToDo) {
-      this.selected = selectedToDo
-    },
-    closeDetails() {
-      this.selected = null
+      text,
+      search,
+      toDoList,
+      selected,
+      filteredList,
+      checkIfAlreadyExists,
+      addToDo,
+      openDetails,
+      closeDetails,
+      deleteToDoAndResetSelected
     }
   }
 }
